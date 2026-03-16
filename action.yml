@@ -106,6 +106,8 @@ runs:
         )
         
         echo "📡 Calling HAIEC API..."
+        echo "DEBUG: API endpoint: https://www.haiec.com/api/ci/scan"
+        echo "DEBUG: Payload: $PAYLOAD"
         
         # Call HAIEC API with proper authentication
         HTTP_RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
@@ -120,10 +122,13 @@ runs:
         HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed -e 's/HTTP_STATUS\:.*//g')
         HTTP_STATUS=$(echo "$HTTP_RESPONSE" | tr -d '\n' | sed -e 's/.*HTTP_STATUS://')
         
+        echo "DEBUG: HTTP Status: $HTTP_STATUS"
+        echo "DEBUG: Response Body: $HTTP_BODY"
+        
         # Check for HTTP errors
         if [ "$HTTP_STATUS" != "200" ]; then
           echo "::error::❌ API request failed with status $HTTP_STATUS"
-          echo "Response: $HTTP_BODY"
+          echo "::error::Response: $HTTP_BODY"
           
           if [ "$HTTP_STATUS" == "401" ]; then
             echo ""
