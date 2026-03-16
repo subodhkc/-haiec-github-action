@@ -100,7 +100,8 @@ runs:
             "sha": "${{ github.sha }}",
             "ref": "${{ github.ref }}"
           },
-          "policyPacks": ["core-integrity"]
+          "policyPacks": ["core-integrity"],
+          "githubToken": "${{ github.token }}"
         }
         EOF
         )
