@@ -143,6 +143,64 @@ runs:
             echo "::error::🔧 Scanner service unavailable. Please retry later or contact support."
           fi
           
+          # Create output directory and artifacts before failing
+          mkdir -p haiec-results
+          
+          # Generate valid empty SARIF file for GitHub Code Scanning
+          echo '{
+  "version": "2.1.0",
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "runs": [{
+    "tool": {
+      "driver": {
+        "name": "HAIEC",
+        "version": "ci-error",
+        "informationUri": "https://haiec.com"
+      }
+    },
+    "results": []
+  }]
+}' > haiec-results/haiec-scan.sarif
+          
+          # Preserve API error response for debugging
+          echo "$HTTP_BODY" > haiec-results/api-error.json
+          
+          # Create empty results file
+          echo '{"error":"API request failed","status":"'"$HTTP_STATUS"'"}' > haiec-results.json
+          
+          echo "::error::HAIEC scan failed (HTTP $HTTP_STATUS). Empty SARIF generated for upload."
+          exit 1
+        fi
+        
+        # Validate API response structure
+        if ! echo "$HTTP_BODY" | jq -e '.findings' > /dev/null 2>&1; then
+          echo "::error::Invalid HAIEC response structure - missing .findings field"
+          
+          # Create output directory and artifacts
+          mkdir -p haiec-results
+          
+          # Save invalid response for debugging
+          echo "$HTTP_BODY" > haiec-results/invalid-response.json
+          
+          # Generate valid empty SARIF
+          echo '{
+  "version": "2.1.0",
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "runs": [{
+    "tool": {
+      "driver": {
+        "name": "HAIEC",
+        "version": "response-error",
+        "informationUri": "https://haiec.com"
+      }
+    },
+    "results": []
+  }]
+}' > haiec-results/haiec-scan.sarif
+          
+          echo '{"error":"Invalid response structure"}' > haiec-results.json
+          
+          echo "::error::Invalid API response. Empty SARIF generated for upload."
           exit 1
         fi
         
@@ -214,6 +272,25 @@ runs:
             }]
           }]
         }' > haiec-results/haiec-scan.sarif
+        
+        # Validate generated SARIF file
+        if ! jq empty haiec-results/haiec-scan.sarif 2>/dev/null; then
+          echo "::warning::Generated SARIF file is invalid, creating fallback"
+          echo '{
+  "version": "2.1.0",
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "runs": [{
+    "tool": {
+      "driver": {
+        "name": "HAIEC",
+        "version": "fallback",
+        "informationUri": "https://haiec.com"
+      }
+    },
+    "results": []
+  }]
+}' > haiec-results/haiec-scan.sarif
+        fi
         
         # Generate HTML report
         echo "📄 Generating HTML report..."
