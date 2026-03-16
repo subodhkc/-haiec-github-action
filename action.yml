@@ -147,22 +147,20 @@ runs:
           mkdir -p haiec-results
           
           # Generate valid empty SARIF file for GitHub Code Scanning
-          cat << 'EOF' > haiec-results/haiec-scan.sarif
-{
-  "version": "2.1.0",
-  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
-  "runs": [{
-    "tool": {
-      "driver": {
-        "name": "HAIEC",
-        "version": "ci-error",
-        "informationUri": "https://haiec.com"
-      }
-    },
-    "results": []
-  }]
-}
-EOF
+          jq -n '{
+            version: "2.1.0",
+            "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+            runs: [{
+              tool: {
+                driver: {
+                  name: "HAIEC",
+                  version: "ci-error",
+                  informationUri: "https://haiec.com"
+                }
+              },
+              results: []
+            }]
+          }' > haiec-results/haiec-scan.sarif
           
           # Preserve API error response for debugging
           echo "$HTTP_BODY" > haiec-results/api-error.json
@@ -185,22 +183,20 @@ EOF
           echo "$HTTP_BODY" > haiec-results/invalid-response.json
           
           # Generate valid empty SARIF
-          cat << 'EOF' > haiec-results/haiec-scan.sarif
-{
-  "version": "2.1.0",
-  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
-  "runs": [{
-    "tool": {
-      "driver": {
-        "name": "HAIEC",
-        "version": "response-error",
-        "informationUri": "https://haiec.com"
-      }
-    },
-    "results": []
-  }]
-}
-EOF
+          jq -n '{
+            version: "2.1.0",
+            "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+            runs: [{
+              tool: {
+                driver: {
+                  name: "HAIEC",
+                  version: "response-error",
+                  informationUri: "https://haiec.com"
+                }
+              },
+              results: []
+            }]
+          }' > haiec-results/haiec-scan.sarif
           
           echo "{\"error\":\"Invalid response structure\"}" > haiec-results.json
           
@@ -280,22 +276,20 @@ EOF
         # Validate generated SARIF file
         if ! jq empty haiec-results/haiec-scan.sarif > /dev/null 2>&1; then
           echo "::warning::Generated SARIF file is invalid, creating fallback"
-          cat << 'EOF' > haiec-results/haiec-scan.sarif
-{
-  "version": "2.1.0",
-  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
-  "runs": [{
-    "tool": {
-      "driver": {
-        "name": "HAIEC",
-        "version": "fallback",
-        "informationUri": "https://haiec.com"
-      }
-    },
-    "results": []
-  }]
-}
-EOF
+          jq -n '{
+            version: "2.1.0",
+            "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+            runs: [{
+              tool: {
+                driver: {
+                  name: "HAIEC",
+                  version: "fallback",
+                  informationUri: "https://haiec.com"
+                }
+              },
+              results: []
+            }]
+          }' > haiec-results/haiec-scan.sarif
         fi
         
         # Generate HTML report
