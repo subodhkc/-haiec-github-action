@@ -182,6 +182,12 @@ runs:
           # Save invalid response for debugging
           echo "$HTTP_BODY" > haiec-results/invalid-response.json
           
+          # Log response details for debugging
+          echo "::warning::API Response Details:"
+          echo "$HTTP_BODY" | jq -r 'if .error then "Error: \(.error)" else "Unknown response format" end' || echo "Failed to parse response"
+          echo "$HTTP_BODY" | jq -r 'if .scanId then "Scan ID: \(.scanId)" else "" end' || true
+          echo "$HTTP_BODY" | jq -r 'if .status then "Status: \(.status)" else "" end' || true
+          
           # Generate valid empty SARIF
           jq -n '{
             version: "2.1.0",
