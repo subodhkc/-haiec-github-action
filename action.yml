@@ -253,7 +253,7 @@ runs:
         fi
         
         # API-based scanning via HAIEC CI endpoint
-        HAIEC_API_URL="${HAIEC_API_URL:-https://haiec.com/api/ci/scan}"
+        HAIEC_API_URL="${HAIEC_API_URL:-https://www.haiec.com/api/ci/scan}"
         
         # Prepare scan request
         REPO_OWNER=$(echo "${{ github.repository }}" | cut -d/ -f1)
